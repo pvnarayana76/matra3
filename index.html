@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Akshara Alchemist - Pro</title>
+    <title>Akshara Alchemist</title>
     <style>
         :root { --bg: #0f172a; --blue: #38bdf8; --gold: #fbbf24; --white: #f1f5f9; --green: #4ade80; --red: #ef4444; }
         * { box-sizing: border-box; touch-action: none; -webkit-user-select: none; } 
@@ -14,6 +14,7 @@
         }
 
         .container { width: 100%; max-width: 420px; height: 100%; display: flex; flex-direction: column; padding: 10px; }
+        
         header { text-align: center; height: 12%; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .timer { font-family: monospace; font-size: 1.2rem; color: var(--gold); margin-top: 5px; font-weight: bold; }
         
@@ -21,6 +22,7 @@
         #target-text { color: var(--gold); font-size: 2.2rem; font-weight: bold; border-bottom: 3px solid #334155; }
 
         .game-grid { display: grid; grid-template-columns: 80px 1fr 80px; gap: 10px; height: 50%; align-items: center; }
+        
         .bank { 
             background: rgba(255,255,255,0.05); border: 1px solid var(--blue); border-radius: 12px;
             height: 95%; display: flex; flex-direction: column; align-items: center; padding: 5px; gap: 8px; overflow-y: auto;
@@ -34,8 +36,17 @@
             background: rgba(251,191,36,0.05); transition: all 0.2s;
         }
 
-        .shake { animation: shake 0.4s; border-color: var(--red) !important; background: rgba(239, 68, 68, 0.2) !important; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+        /* FAILURE ANIMATION */
+        .shake {
+            animation: shake 0.4s;
+            border-color: var(--red) !important;
+            background: rgba(239, 68, 68, 0.2) !important;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
 
         .tile {
             width: 60px; height: 60px; background: white; color: #1e293b; border-radius: 10px;
@@ -45,7 +56,7 @@
         .tile.m { background: var(--gold); box-shadow: 0 4px 0 #b45309; }
 
         #msg { font-size: 0.8rem; color: var(--green); margin-top: 10px; height: 15px; font-weight: bold; text-align: center; }
-        #next-btn { padding: 10px 20px; background: var(--green); border: none; border-radius: 30px; font-weight: bold; color: #0f172a; margin-top: 5px; }
+        #next-btn { padding: 10px 20px; background: var(--green); border: none; border-radius: 30px; font-weight: bold; color: #0f172a; margin-top: 5px; cursor: pointer;}
         .hidden { display: none !important; }
         
         #tray-area { height: 15%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -65,15 +76,15 @@
     </header>
 
     <div id="goal-area">
-        <div id="target-text">...</div>
+        <div id="target-text">की</div>
     </div>
 
     <div class="game-grid">
         <div class="bank" id="v-bank"></div>
         <div class="forge-zone">
-            <div id="forge-circle" ondragover="e=>e.preventDefault()" ondrop="handleDrop(event)">?</div>
+            <div id="forge-circle" ondragover="allowDrop(event)" ondrop="handleDrop(event)">?</div>
             <div id="msg">Drag a Vyanjan</div>
-            <button id="next-btn" class="hidden" onclick="moveNext()">Next Challenge →</button>
+            <button id="next-btn" class="hidden" onclick="moveNext()">Next →</button>
         </div>
         <div class="bank" id="m-bank"></div>
     </div>
@@ -84,6 +95,7 @@
 </div>
 
 <script>
+    // BRIDGE MEMORY
     let bridge = { v: "", m: "", draggingType: "", draggingVal: "" };
     let timer = 0, clockInterval = null;
     let idx = 0;
@@ -138,12 +150,17 @@
         document.getElementById('target-text').innerText = (lvl == "1") ? d.t : d.w;
         document.getElementById('next-btn').classList.add('hidden');
         document.getElementById('msg').innerText = "Drag a Vyanjan";
+        
+        // Reset Logic
         bridge.v = ""; bridge.m = "";
-        document.getElementById('forge-circle').innerText = "?";
+        const circle = document.getElementById('forge-circle');
+        circle.innerText = "?";
+        circle.classList.remove('shake');
 
         // Render Banks
         document.getElementById('v-bank').innerHTML = "<h3>VYANJAN</h3>";
         d.v.forEach(v => document.getElementById('v-bank').innerHTML += `<div class="tile" draggable="true" ondragstart="handleDragStart('${v}','v')">${v}</div>`);
+        
         document.getElementById('m-bank').innerHTML = "<h3>MATRA</h3>";
         d.m.forEach(m => document.getElementById('m-bank').innerHTML += `<div class="tile m" draggable="true" ondragstart="handleDragStart('${m}','m')">${m}</div>`);
 
@@ -152,11 +169,12 @@
         if(lvl == "2") {
             trayArea.classList.remove('hidden');
             tray.innerHTML = "";
-            d.p.forEach(part => tray.innerHTML += `<div class="slot" ondragover="e=>e.preventDefault()" ondrop="handleTrayDrop(event, '${part}')">?</div>`);
+            d.p.forEach(part => tray.innerHTML += `<div class="slot" ondragover="allowDrop(event)" ondrop="handleTrayDrop(event, '${part}')">?</div>`);
         } else { trayArea.classList.add('hidden'); }
     }
 
     function handleDragStart(val, type) { bridge.draggingVal = val; bridge.draggingType = type; }
+    function allowDrop(e) { e.preventDefault(); }
 
     function handleDrop(e) {
         e.preventDefault();
@@ -165,18 +183,18 @@
 
         if (bridge.draggingType === 'v') {
             bridge.v = bridge.draggingVal; bridge.m = "";
+            circle.innerText = bridge.v;
             document.getElementById('msg').innerText = "Now add Matra";
         } else if (bridge.draggingType === 'm' && bridge.v !== "") {
             bridge.m = bridge.draggingVal;
-        }
-        
-        const combined = bridge.v + bridge.m;
-        circle.innerText = combined || "?";
+            const combined = bridge.v + bridge.m;
+            circle.innerText = combined;
 
-        // LEVEL 1 VALIDATION
-        if (document.getElementById('lvl').value == "1" && bridge.m !== "") {
-            if (combined === level1Data[idx].t) victory();
-            else triggerError(circle, true); // True means reset whole letter
+            // CHECK LOGIC FOR LEVEL 1
+            if (document.getElementById('lvl').value == "1") {
+                if (combined === level1Data[idx].t) victory();
+                else triggerError(circle, true);
+            }
         }
     }
 
@@ -187,22 +205,23 @@
             e.target.innerText = combined;
             e.target.style.background = "rgba(74, 222, 128, 0.2)";
             e.target.style.borderColor = "var(--green)";
+            // Check completion
             const slots = [...document.querySelectorAll('.slot')];
             if (slots.every(s => s.innerText !== "?")) victory();
             else { bridge.v = ""; bridge.m = ""; document.getElementById('forge-circle').innerText = "?"; }
         } else {
-            triggerError(e.target, false);
-            document.getElementById('msg').innerText = "Wrong part for this slot!";
+            triggerError(e.target, true); // True wipes the forge on mistake
+            document.getElementById('msg').innerText = "Wrong part!";
         }
     }
 
-    function triggerError(el, resetAll) {
+    function triggerError(el, wipe) {
         playSound('error');
         el.classList.add('shake');
         setTimeout(() => {
             el.classList.remove('shake');
-            if(resetAll) {
-                // WHOLE LETTER DISAPPEARS AS REQUESTED
+            if(wipe) {
+                // THE STRICTURE: Whole letter disappears
                 bridge.v = ""; bridge.m = "";
                 document.getElementById('forge-circle').innerText = "?";
                 document.getElementById('msg').innerText = "Failed! Try again.";
