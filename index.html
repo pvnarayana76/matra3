@@ -3,65 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Akshara Alchemist</title>
+    <title>Akshara Alchemist - Stable Pro</title>
     <style>
         :root { --bg: #0f172a; --blue: #38bdf8; --gold: #fbbf24; --white: #f1f5f9; --green: #4ade80; --red: #ef4444; }
         * { box-sizing: border-box; touch-action: none; -webkit-user-select: none; } 
         
         body { 
             height: 100vh; margin: 0; overflow: hidden; background: var(--bg); color: var(--white);
-            font-family: sans-serif; display: flex; flex-direction: column; align-items: center;
+            font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center;
         }
 
         .container { width: 100%; max-width: 420px; height: 100%; display: flex; flex-direction: column; padding: 10px; }
-        
         header { text-align: center; height: 12%; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .timer { font-family: monospace; font-size: 1.2rem; color: var(--gold); margin-top: 5px; font-weight: bold; }
         
-        #goal-area { text-align: center; height: 12%; display: flex; align-items: center; justify-content: center; }
-        #target-text { color: var(--gold); font-size: 2.2rem; font-weight: bold; border-bottom: 3px solid #334155; }
+        #goal-area { text-align: center; height: 12%; display: flex; align-items: center; justify-content: center; position: relative; }
+        #target-text { color: var(--gold); font-size: 2.2rem; font-weight: bold; border-bottom: 3px solid #334155; padding: 0 10px; }
 
-        .game-grid { display: grid; grid-template-columns: 80px 1fr 80px; gap: 10px; height: 50%; align-items: center; }
-        
+        .game-grid { display: grid; grid-template-columns: 85px 1fr 85px; gap: 10px; height: 50%; align-items: center; }
         .bank { 
             background: rgba(255,255,255,0.05); border: 1px solid var(--blue); border-radius: 12px;
-            height: 95%; display: flex; flex-direction: column; align-items: center; padding: 5px; gap: 8px; overflow-y: auto;
+            height: 95%; display: flex; flex-direction: column; align-items: center; padding: 8px 5px; gap: 10px; overflow-y: auto;
         }
-        .bank h3 { font-size: 0.6rem; margin: 2px; color: var(--blue); }
+        .bank h3 { font-size: 0.6rem; margin: 2px; color: var(--blue); letter-spacing: 1px; }
 
         .forge-zone { display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #forge-circle {
-            width: 110px; height: 110px; border: 4px dashed var(--gold); border-radius: 50%;
-            display: flex; justify-content: center; align-items: center; font-size: 3rem;
-            background: rgba(251,191,36,0.05); transition: all 0.2s;
+            width: 115px; height: 115px; border: 4px dashed var(--gold); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-size: 3.5rem;
+            background: rgba(251,191,36,0.05); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         /* FAILURE ANIMATION */
-        .shake {
-            animation: shake 0.4s;
-            border-color: var(--red) !important;
-            background: rgba(239, 68, 68, 0.2) !important;
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
+        .fail-shake { animation: failShake 0.5s forwards; border-color: var(--red) !important; background: rgba(239, 68, 68, 0.3) !important; }
+        @keyframes failShake {
+            0%, 100% { transform: translateX(0) scale(1); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+            90% { transform: scale(0.1); opacity: 0; }
         }
 
         .tile {
-            width: 60px; height: 60px; background: white; color: #1e293b; border-radius: 10px;
-            display: flex; justify-content: center; align-items: center; font-size: 1.8rem; font-weight: bold;
-            box-shadow: 0 4px 0 #94a3b8; flex-shrink: 0;
+            width: 65px; height: 65px; background: white; color: #1e293b; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: bold;
+            box-shadow: 0 4px 0 #94a3b8; flex-shrink: 0; cursor: pointer;
         }
         .tile.m { background: var(--gold); box-shadow: 0 4px 0 #b45309; }
 
-        #msg { font-size: 0.8rem; color: var(--green); margin-top: 10px; height: 15px; font-weight: bold; text-align: center; }
-        #next-btn { padding: 10px 20px; background: var(--green); border: none; border-radius: 30px; font-weight: bold; color: #0f172a; margin-top: 5px; cursor: pointer;}
+        #msg { font-size: 0.85rem; color: var(--green); margin-top: 10px; height: 20px; font-weight: bold; text-align: center; }
+        #next-btn { padding: 10px 25px; background: var(--green); border: none; border-radius: 30px; font-weight: bold; color: #0f172a; margin-top: 5px; cursor: pointer; z-index: 10; }
+        
         .hidden { display: none !important; }
         
         #tray-area { height: 15%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .word-tray { display: flex; gap: 8px; }
-        .slot { width: 65px; height: 65px; border: 2px dashed #475569; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; background: rgba(0,0,0,0.2); }
+        .slot { width: 65px; height: 65px; border: 2px dashed #475569; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 2rem; background: rgba(0,0,0,0.2); transition: 0.3s; }
     </style>
 </head>
 <body>
@@ -69,22 +65,22 @@
 <div class="container">
     <header>
         <div class="timer">⏱️ <span id="clock">00:00</span></div>
-        <select id="lvl" onchange="start()" style="background:#1e293b; color:white; border:1px solid var(--blue); padding: 2px 5px; font-size: 0.8rem;">
+        <select id="lvl" onchange="start()" style="background:#1e293b; color:white; border:1px solid var(--blue); padding: 4px 10px; border-radius: 5px;">
             <option value="1">Level 1: Fusion Lab</option>
             <option value="2">Level 2: Word Smith</option>
         </select>
     </header>
 
     <div id="goal-area">
-        <div id="target-text">की</div>
+        <div id="target-text">लोडिंग...</div>
     </div>
 
     <div class="game-grid">
         <div class="bank" id="v-bank"></div>
         <div class="forge-zone">
-            <div id="forge-circle" ondragover="allowDrop(event)" ondrop="handleDrop(event)">?</div>
+            <div id="forge-circle" ondragover="e=>e.preventDefault()" ondrop="handleDrop(event)">?</div>
             <div id="msg">Drag a Vyanjan</div>
-            <button id="next-btn" class="hidden" onclick="moveNext()">Next →</button>
+            <button id="next-btn" class="hidden" onclick="moveNext()">Next Challenge →</button>
         </div>
         <div class="bank" id="m-bank"></div>
     </div>
@@ -94,50 +90,51 @@
     </div>
 </div>
 
+
+
 <script>
-    // BRIDGE MEMORY
-    let bridge = { v: "", m: "", draggingType: "", draggingVal: "" };
-    let timer = 0, clockInterval = null;
-    let idx = 0;
+    // THE PERSISTENT STATE ENGINE
+    const G_STATE = {
+        v: "", m: "", draggingVal: "", draggingType: "",
+        timer: 0, interval: null, idx: 0
+    };
 
-    // AUDIO
-    function playSound(type) {
-        const context = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = context.createOscillator();
-        const gain = context.createGain();
-        if (type === 'success') {
-            osc.frequency.setValueAtTime(523, context.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(880, context.currentTime + 0.1);
-        } else {
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(120, context.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(40, context.currentTime + 0.2);
-        }
-        osc.connect(gain); gain.connect(context.destination);
-        osc.start(); osc.stop(context.currentTime + 0.3);
-    }
-
-    // SEPARATED DATA
-    const level1Data = [
+    const L1_DATA = [
         {t:"की",v:["क","ल"],m:["ा","ी"]},
         {t:"मु",v:["म","स"],m:["ु","ू"]},
         {t:"दे",v:["द","र"],m:["े","ै"]}
     ];
 
-    const level2Data = [
+    const L2_DATA = [
         {w:"किताब",p:["कि","ता","ब"],v:["क","त","ब"],m:["ि","ा"]},
         {w:"मछली",p:["म","छ","ली"],v:["म","छ","ल"],m:["ी"]},
         {w:"सूरज",p:["सू","र","ज"],v:["स","र","ज"],m:["ू"]}
     ];
 
+    function playAudio(type) {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        if(type==='win'){
+            osc.frequency.setValueAtTime(523, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime+0.1);
+        } else {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(100, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime+0.2);
+        }
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime+0.3);
+    }
+
     function start() {
-        idx = 0;
-        if(clockInterval) clearInterval(clockInterval);
-        timer = 0;
-        clockInterval = setInterval(() => {
-            timer++;
-            let m = Math.floor(timer/60).toString().padStart(2,'0');
-            let s = (timer%60).toString().padStart(2,'0');
+        G_STATE.idx = 0;
+        if(G_STATE.interval) clearInterval(G_STATE.interval);
+        G_STATE.timer = 0;
+        G_STATE.interval = setInterval(() => {
+            G_STATE.timer++;
+            let m = Math.floor(G_STATE.timer/60).toString().padStart(2,'0');
+            let s = (G_STATE.timer%60).toString().padStart(2,'0');
             document.getElementById('clock').innerText = `${m}:${s}`;
         }, 1000);
         load();
@@ -145,100 +142,117 @@
 
     function load() {
         const lvl = document.getElementById('lvl').value;
-        const d = (lvl == "1") ? level1Data[idx] : level2Data[idx];
+        const d = (lvl == "1") ? L1_DATA[G_STATE.idx] : L2_DATA[G_STATE.idx];
         
         document.getElementById('target-text').innerText = (lvl == "1") ? d.t : d.w;
         document.getElementById('next-btn').classList.add('hidden');
         document.getElementById('msg').innerText = "Drag a Vyanjan";
         
-        // Reset Logic
-        bridge.v = ""; bridge.m = "";
+        // Hard Reset of Forge
+        G_STATE.v = ""; G_STATE.m = "";
         const circle = document.getElementById('forge-circle');
         circle.innerText = "?";
-        circle.classList.remove('shake');
+        circle.className = ""; 
 
-        // Render Banks
-        document.getElementById('v-bank').innerHTML = "<h3>VYANJAN</h3>";
-        d.v.forEach(v => document.getElementById('v-bank').innerHTML += `<div class="tile" draggable="true" ondragstart="handleDragStart('${v}','v')">${v}</div>`);
+        // Populate Banks
+        const vBank = document.getElementById('v-bank');
+        const mBank = document.getElementById('m-bank');
+        vBank.innerHTML = "<h3>VYANJAN</h3>";
+        mBank.innerHTML = "<h3>MATRA</h3>";
         
-        document.getElementById('m-bank').innerHTML = "<h3>MATRA</h3>";
-        d.m.forEach(m => document.getElementById('m-bank').innerHTML += `<div class="tile m" draggable="true" ondragstart="handleDragStart('${m}','m')">${m}</div>`);
+        d.v.forEach(v => vBank.innerHTML += `<div class="tile" draggable="true" ondragstart="setDrag('${v}','v')">${v}</div>`);
+        d.m.forEach(m => mBank.innerHTML += `<div class="tile m" draggable="true" ondragstart="setDrag('${m}','m')">${m}</div>`);
 
         const trayArea = document.getElementById('tray-area');
         const tray = document.getElementById('word-tray');
         if(lvl == "2") {
             trayArea.classList.remove('hidden');
             tray.innerHTML = "";
-            d.p.forEach(part => tray.innerHTML += `<div class="slot" ondragover="allowDrop(event)" ondrop="handleTrayDrop(event, '${part}')">?</div>`);
-        } else { trayArea.classList.add('hidden'); }
+            d.p.forEach(part => tray.innerHTML += `<div class="slot" ondragover="e=>e.preventDefault()" ondrop="handleTrayDrop(event, '${part}')">?</div>`);
+        } else {
+            trayArea.classList.add('hidden');
+        }
     }
 
-    function handleDragStart(val, type) { bridge.draggingVal = val; bridge.draggingType = type; }
-    function allowDrop(e) { e.preventDefault(); }
+    function setDrag(val, type) {
+        G_STATE.draggingVal = val;
+        G_STATE.draggingType = type;
+    }
 
     function handleDrop(e) {
         e.preventDefault();
         const circle = document.getElementById('forge-circle');
-        circle.classList.remove('shake');
+        circle.className = ""; // Clear animations
 
-        if (bridge.draggingType === 'v') {
-            bridge.v = bridge.draggingVal; bridge.m = "";
-            circle.innerText = bridge.v;
+        if (G_STATE.draggingType === 'v') {
+            G_STATE.v = G_STATE.draggingVal;
+            G_STATE.m = ""; // Consonant stays, matra resets
             document.getElementById('msg').innerText = "Now add Matra";
-        } else if (bridge.draggingType === 'm' && bridge.v !== "") {
-            bridge.m = bridge.draggingVal;
-            const combined = bridge.v + bridge.m;
-            circle.innerText = combined;
+        } else if (G_STATE.draggingType === 'm') {
+            if(G_STATE.v === "") {
+                document.getElementById('msg').innerText = "Drop Vyanjan First!";
+                return;
+            }
+            G_STATE.m = G_STATE.draggingVal;
+        }
+        
+        const res = G_STATE.v + G_STATE.m;
+        circle.innerText = res || "?";
 
-            // CHECK LOGIC FOR LEVEL 1
-            if (document.getElementById('lvl').value == "1") {
-                if (combined === level1Data[idx].t) victory();
-                else triggerError(circle, true);
+        // Level 1 Strict Check
+        if (document.getElementById('lvl').value == "1" && G_STATE.m !== "") {
+            if (res === L1_DATA[G_STATE.idx].t) {
+                victory();
+            } else {
+                failEffect(circle);
             }
         }
     }
 
     function handleTrayDrop(e, target) {
         e.preventDefault();
-        const combined = bridge.v + bridge.m;
+        const combined = G_STATE.v + G_STATE.m;
         if (combined === target) {
             e.target.innerText = combined;
-            e.target.style.background = "rgba(74, 222, 128, 0.2)";
+            e.target.style.background = "rgba(74, 222, 128, 0.4)";
             e.target.style.borderColor = "var(--green)";
-            // Check completion
+            
+            // Success: Reset Forge for next syllable
+            G_STATE.v = ""; G_STATE.m = "";
+            document.getElementById('forge-circle').innerText = "?";
+            
             const slots = [...document.querySelectorAll('.slot')];
             if (slots.every(s => s.innerText !== "?")) victory();
-            else { bridge.v = ""; bridge.m = ""; document.getElementById('forge-circle').innerText = "?"; }
         } else {
-            triggerError(e.target, true); // True wipes the forge on mistake
-            document.getElementById('msg').innerText = "Wrong part!";
+            failEffect(e.target);
+            document.getElementById('msg').innerText = "Wrong combination!";
         }
     }
 
-    function triggerError(el, wipe) {
-        playSound('error');
-        el.classList.add('shake');
+    function failEffect(el) {
+        playAudio('fail');
+        el.classList.add('fail-shake');
         setTimeout(() => {
-            el.classList.remove('shake');
-            if(wipe) {
-                // THE STRICTURE: Whole letter disappears
-                bridge.v = ""; bridge.m = "";
+            el.classList.remove('fail-shake');
+            // THE STRICTURE: Wipe everything on failure
+            if(el.id === 'forge-circle' || document.getElementById('lvl').value == "1") {
+                G_STATE.v = ""; G_STATE.m = "";
                 document.getElementById('forge-circle').innerText = "?";
-                document.getElementById('msg').innerText = "Failed! Try again.";
+                document.getElementById('msg').innerText = "Fusion Failed! Try Again.";
             }
-        }, 400);
+        }, 500);
     }
 
     function victory() {
-        playSound('success');
-        document.getElementById('msg').innerText = "Shabash!";
+        playAudio('win');
+        document.getElementById('msg').innerText = "Shabash! Success!";
         document.getElementById('next-btn').classList.remove('hidden');
     }
 
     function moveNext() {
-        idx++;
-        const max = (document.getElementById('lvl').value == "1") ? level1Data.length : level2Data.length;
-        if(idx >= max) idx = 0;
+        G_STATE.idx++;
+        const max = (document.getElementById('lvl').value == "1") ? L1_DATA.length : L2_DATA.length;
+        if(G_STATE.idx >= max) G_STATE.idx = 0;
         load();
     }
 
